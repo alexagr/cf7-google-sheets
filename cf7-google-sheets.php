@@ -2,7 +2,7 @@
 /**
  *
  * @wordpress-plugin
- * Plugin Name:       Google Sheets for Contact Form 7
+ * Plugin Name:       Integration with Google Sheets for Contact Form 7
  * Description:       Integration between Contact Form 7 and Google Sheets.
  * Version:           1.0
  * Author:            Alex Agranov
@@ -20,7 +20,6 @@ define( 'CF7_SHEETS_DIR', 'cf7-google-sheets' );
 define( 'CF7_SHEETS_BASE_NAME', plugin_basename(__FILE__) );
 
 // require_once plugin_dir_path( __FILE__ ) . 'lib/vendor/autoload.php';
-// require_once plugin_dir_path( __FILE__ ) . 'get-token.php';
 require_once plugin_dir_path( __FILE__ ) . 'helpers.php';
 require_once plugin_dir_path( __FILE__ ) . 'admin-form.php';
 require_once plugin_dir_path( __FILE__ ) . 'client.php';
