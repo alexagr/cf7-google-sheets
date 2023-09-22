@@ -4,7 +4,7 @@
  * @wordpress-plugin
  * Plugin Name:       Integration with Google Sheets for Contact Form 7
  * Description:       Integration between Contact Form 7 and Google Sheets.
- * Version:           1.0
+ * Version:           1.1
  * Author:            Alex Agranov
  * License:           GNU General Public License v3.0
  * License URI:       http://www.gnu.org/licenses/gpl-3.0.html

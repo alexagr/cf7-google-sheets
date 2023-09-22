@@ -88,6 +88,9 @@ Sometimes it can take a while of spinning before it goes through. But if the ent
 
 == Changelog ==
 
+= 1.1 =
+* Add integration with "Contact Form 7 Database Addon - CFDB7"
+
 = 1.0 =
 * Initial version
 
