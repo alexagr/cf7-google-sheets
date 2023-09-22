@@ -48,6 +48,10 @@ After successfully connecting the plugin to Google Sheets, do the following to c
 
 The plugin verifies spreadsheet header on each new form submission and adds new fields to it if needed. Note that it never deletes fields from the header - as this would also delete some submission data - though you can do it manually. You may also manually reorder columns as you wish.
 
+= Integration with "Contact Form 7 Database Addon - CFDB7" = 
+
+If you use [Contact Form 7 Database Addon - CFDB7](https://wordpress.org/plugins/contact-form-cfdb7/) to save your submissions, you will also be able to resend already submitted forms to Google Sheets. This may be useful if something went wrong during initial form submission and/or someone deleted data in Google Sheets by mistake. In order to do so, in CFDB7 plugin, choose your form, open specific submission and click *Send to Google Sheets* button.
+
 = Acknowledgements =
 
 This plugin is inspired by [CF7 Google Sheets Connector](https://wordpress.org/plugins/cf7-google-sheets-connector/) plugin.
@@ -64,6 +68,7 @@ All this results in a more reliable integration.
 
 1. Connecting plugin to Google Sheets
 2. Configuring Google Sheets processor in Contact Form 7
+3. Integration with "Contact Form 7 Database Addon - CFDB7" plugin
 
 == Installation ==
 

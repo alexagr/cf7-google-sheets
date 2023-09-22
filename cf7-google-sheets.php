@@ -24,6 +24,7 @@ require_once plugin_dir_path( __FILE__ ) . 'helpers.php';
 require_once plugin_dir_path( __FILE__ ) . 'admin-form.php';
 require_once plugin_dir_path( __FILE__ ) . 'client.php';
 require_once plugin_dir_path( __FILE__ ) . 'service.php';
+require_once plugin_dir_path( __FILE__ ) . 'cfdb7-plugin.php';
 
 
 function init_cf7_google_sheets() {
@@ -32,6 +33,9 @@ function init_cf7_google_sheets() {
 
     $service = new CF7_Sheets_Service();
     $service->init();
+
+    $cfdb7_plugin = new CF7_Sheets_CFDB7_Plugin();
+    $cfdb7_plugin->init();
 }
 init_cf7_google_sheets();
 

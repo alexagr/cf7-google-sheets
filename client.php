@@ -56,12 +56,12 @@ class CF7_Sheets_Client
     public function add_row($sheetId, $tabId, $data, $meta)
     {
         if (empty($data))
-            return;
+            return false;
         
         $client_data = $this->client_data();
         if (empty($client_data['client_email'])) {
             cf7_sheets_log('Failed to add_row() to sheet ' . $sheetId . ' tab ' . $tabId . " - credentials are missing");
-            return;
+            return false;
         }
         
         try {
@@ -129,6 +129,8 @@ class CF7_Sheets_Client
             }
         } catch (Exception $e) {
             cf7_sheets_log('Failed to add_row() to sheet ' . $sheetId . ' tab ' . $tabId . "\n" . $e->getMessage() . "\n" . $e->getTraceAsString());
+            return false;
         }
+        return true;
     }
 }
