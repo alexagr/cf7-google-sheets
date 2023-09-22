@@ -6,10 +6,12 @@
 
 class CF7_Sheets_Service
 {
+    protected $files = array();
 
     public function init()
     {
         add_filter( 'wpcf7_editor_panels', array( $this, 'editor_panels' ) );
+        add_action( 'wpcf7_before_send_mail', array( $this, 'store_files' ) );
         add_action( 'wpcf7_after_save', array( $this, 'save_settings' ) );
         add_action( 'wpcf7_mail_sent', array( $this, 'send_to_sheets' ) );
     }
@@ -96,6 +98,20 @@ class CF7_Sheets_Service
         update_post_meta( $post->id(), 'gs_settings', $sheet_data );
     }
 
+    public function store_files()
+    {
+        $form = WPCF7_Submission::get_instance();
+        if ( $form ) {
+            $this->files = array();
+
+            $files = $form->uploaded_files();
+            foreach ( $files as $name => $path ) {
+                if ( isset( $_FILES[$name] ) )
+                    $this->files[$name] = $_FILES[$name]['name'];
+            }
+        }
+    }
+
     public function send_to_sheets( $form )
     {
         $submission = WPCF7_Submission::get_instance();
@@ -109,7 +125,9 @@ class CF7_Sheets_Service
             $data = array();
             foreach ( $posted_data as $key => $value ) {
                 if ( ( strpos( $key, '_wpcf7' ) === false ) && ( strpos( $key, '_wpnonce' ) === false ) ) {
-                    if ( is_array( $value ) ) {
+                    if ( isset( $this->files[ $key ] ) ) {
+                        $data[ $key ] = sanitize_file_name( $this->files[ $key ] );
+                    } elseif ( is_array( $value ) ) {
                         $data[ $key ] = sanitize_text_field( implode( ', ', $value ) );
                     } else {
                         $data[ $key ] = sanitize_textarea_field(stripcslashes($value));
