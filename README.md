@@ -68,7 +68,7 @@ All this results in a more reliable integration.
 
 ## Frequently Asked Questions
 
-* Q: Why isn't the data sent to spreadsheet? Contact Form 7 Submit is just Spinning. =
+* Q: Why isn't the data sent to spreadsheet? Contact Form 7 Submit is just Spinning.
 * A: Sometimes it can take a while of spinning before it goes through. But if the entries never show up in your Google Sheet use the following checklist:
   * Check that plugin can access your sheet by entering it's *Sheet ID* in **Settings** screen and clicking *Test*
   * In Google Sheets processor configuration screen for your form:
