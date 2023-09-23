@@ -35,7 +35,7 @@ After successfully connecting the plugin to Google Sheets, do the following to c
 * There is no need to enter names for other columns - they will be automatically added upon form submission
 * Share the sheet with *Client Email* that represents your instance of "Google Sheets for Contact Form 7" plugin - as *Editor* role
 
-## _In Contact Form 7_
+### _In Contact Form 7_
 
 * Open your contact form
 * Switch to **Google Sheets** tab
