@@ -2,10 +2,11 @@
 /**
  *
  * @wordpress-plugin
- * Plugin Name:       Google Sheets for Contact Form 7
- * Description:       Integration between Contact Form 7 and Google Sheets.
- * Version:           1.1
+ * Plugin Name:       Integration with Google Sheets for Contact Form 7
+ * Description:       Send your Contact Forms 7 submissions directly to your Google Sheets spreadsheet.
+ * Version:           1.3
  * Author:            Alex Agranov
+ * Text Domain:       cf7-google-sheets
  * License:           GNU General Public License v3.0
  * License URI:       http://www.gnu.org/licenses/gpl-3.0.html
  */
@@ -15,7 +16,7 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'CF7_SHEETS_VERSION', '1.0' );
+define( 'CF7_SHEETS_VERSION', '1.3' );
 define( 'CF7_SHEETS_DIR', 'cf7-google-sheets' );
 define( 'CF7_SHEETS_BASE_NAME', plugin_basename(__FILE__) );
 
@@ -27,7 +28,7 @@ require_once plugin_dir_path( __FILE__ ) . 'service.php';
 require_once plugin_dir_path( __FILE__ ) . 'cfdb7-plugin.php';
 
 
-function init_cf7_google_sheets() {
+function cf7_sheets_init() {
     $admin_form = new CF7_Sheets_Admin_Form();
     $admin_form->init();
 
@@ -37,5 +38,5 @@ function init_cf7_google_sheets() {
     $cfdb7_plugin = new CF7_Sheets_CFDB7_Plugin();
     $cfdb7_plugin->init();
 }
-init_cf7_google_sheets();
+cf7_sheets_init();
 

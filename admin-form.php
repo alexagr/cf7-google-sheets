@@ -1,5 +1,10 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+/**
+ * Admin form
+ */
 class CF7_Sheets_Admin_Form
 {
 
@@ -8,13 +13,7 @@ class CF7_Sheets_Admin_Form
     const NONCE_KEY = 'cf7_sheets';
 
     const WHITELISTED_KEYS = array(
-        'cf7-sheets-test'
-    );
-
-    protected $views = array(
-        'connect' => 'views/connect',
-        'alerts' => 'views/alerts',
-        'not-found' => 'views/not-found'
+        'cf7-sheets-config'
     );
 
     public function init()
@@ -58,72 +57,191 @@ class CF7_Sheets_Admin_Form
     {
         add_submenu_page(
             'wpcf7',
-            esc_html__('Google Sheets', 'cf7-sheets'),
-            esc_html__('Google Sheets', 'cf7-sheets'),
+            esc_html__('Google Sheets', 'cf7-google-sheets'),
+            esc_html__('Google Sheets', 'cf7-google-sheets'),
             'manage_options',
             $this->get_id(),
-            array(&$this, 'load_view')
+            array(&$this, 'show')
         );
     }
 
     public function add_settings_link($links) {
-        array_push($links, '<a href="' . admin_url('admin.php?page=cf7-sheets-forms') . '">' . __('Settings', 'cf7-sheets') . '</a>');
+        array_push($links, '<a href="' . esc_url(admin_url('admin.php?page=cf7-sheets-forms')) . '">' . __('Settings', 'cf7-google-sheets') . '</a>');
         return $links;
     }
 
-    function load_view()
+    function show()
     {
-        $this->default_values = $this->get_defaults();
-        $this->current_page = $this->current_view();
-        
-        $current_views = isset($this->views[$this->current_page]) ? $this->views[$this->current_page] : $this->views['not-found'];
+        $client = new CF7_Sheets_Client();
+        $client_data = $client->client_data();
 
-        $step_data_func_name = $this->current_page . '_data';
+        $default_values = $this->get_defaults();
 
-        $args = [];
-        /**
-         * prepare data for view
-         */
-        if (method_exists($this, $step_data_func_name)) {
-            $args = $this->$step_data_func_name();
-        }
-        /**
-         * Default Admin Form Template
-         */
+        $config_text = isset($default_values['cf7-sheets-config']['credentials']) ? stripslashes($default_values['cf7-sheets-config']['credentials']) : '{}';
+        $config = json_decode($config_text, true);
 
-        echo '<div class="cf7-sheets-forms ' . $this->current_page . '">';
-
+        echo '<div class="cf7-sheets-forms">';
         echo '<div class="inner">';
 
-        $this->include_with_variables($this->template_server_path('views/alerts'));
+        $form_errors = get_transient("cf7_sheets_errors");
+        delete_transient("cf7_sheets_errors");
 
-        $this->include_with_variables($this->template_server_path($current_views), $args);
+        if(!empty($form_errors)){
+            foreach($form_errors as $error){
+                echo '<div id="message" class="alert alert-' . esc_attr($error['type']) . '">' . esc_html($error['message']) . '</div>';
+            }
+        }
 
-        echo '</div>';
+        echo '
+  <div class="wrap">
 
-        echo '</div>';
+    <h1>' . esc_html__('Google Sheets for Contact Form 7', 'cf7-google-sheets') . '</h1>
+
+    <h2>' . esc_html__('Step 1: create application credentials', 'cf7-google-sheets') . '</h2>
+    <div class="card">
+        <ul style="list-style: circle">
+        <li>' . esc_html__('Go to', 'cf7-google-sheets') . ' <a href="https://console.developers.google.com">https://console.developers.google.com</a></li>
+        <li>' . esc_html__('Choose existing project or create a new one.', 'cf7-google-sheets') . '</li>
+        <li>' . wp_kses(__('Click <b>Enable APIs And Services', 'cf7-google-sheets'), array('b' => array())) . '</b>.
+            <ul style="list-style: disclosure-closed; padding-left: 1em;">
+            <li>' . wp_kses(__('Search for <b>Google Sheet API</b> and enable it.', 'cf7-google-sheets'), array('b' => array())) . '</li>
+            </ul>
+        </li>
+        <li>' . wp_kses(__('Click <b>Credentials &gt; Create Credentials &gt; Service Account</b> - this will open <b>Create Service Account</b> screen.', 'cf7-google-sheets'), array('b' => array())) . '
+            <ul style="list-style: disclosure-closed; padding-left: 1em;">
+            <li>' . wp_kses(__('Under <b>Service account details</b>:', 'cf7-google-sheets'), array('b' => array())) . '
+                <ul style="list-style: disc; padding-left: 1em;">
+                <li>' . wp_kses(__('For <b>Service account name</b> select &quot;Google Sheets for Contact Form 7&quot;.', 'cf7-google-sheets'), array('b' => array())) . '</li>
+                <li>' . wp_kses(__('Click <b>CREATE AND CONTINUE</b>.', 'cf7-google-sheets'), array('b' => array())) . '</li>
+                </ul>
+            </li>
+            <li>' . wp_kses(__('Under <b>Grant this service account access to the project</b>:', 'cf7-google-sheets'), array('b' => array())) . '
+                <ul style="list-style: disc; padding-left: 1em;">
+                <li>' . wp_kses(__('For <b>Role</b> enter &quot;Editor&quot;.', 'cf7-google-sheets'), array('b' => array())) . '</li>
+                <li>' . wp_kses(__('Click <b>CONTINUE</b>.', 'cg7-google-sheets'), array('b' => array())) . '</li>
+                </ul>
+            </li>
+            <li>' . wp_kses(__('Click <b>DONE</b>.', 'cf7-google-sheets'), array('b' => array())) . '</li>
+            </ul>
+        </li>
+        <li>' . wp_kses(__('Click on the created service account under <b>Service Accounts</b> - this will open <b>Edit Service Account</b> screen.', 'cf7-google-sheets'), array('b' => array())) . '
+            <ul style="list-style: disclosure-closed; padding-left: 1em;">
+            <li>' . wp_kses(__('Switch to <b>KEYS</b> tab.', 'cf7-google-sheets'), array('b' => array())) . '</li>
+            <li>' . wp_kses(__('Click <b>ADD KEY &gt; Create new key</b>.', 'cf7-google-sheets'), array('b' => array())) . '
+                <ul style="list-style: disc; padding-left: 1em;">
+                <li>' . wp_kses(__('For <b>Key type</b> choose &quot;JSON&quot;.', 'cf7-google-sheets'), array('b' => array())) . '</li>
+                <li>' . wp_kses(__('Click <b>CREATE</b> - credentials.json file will be downloaded.', 'cf7-google-sheets'), array('b' => array())) . '</li>
+                </ul>
+            </li>
+            </ul>
+        </li>
+        </ul>
+    </div>
+
+    <br>
+    <hr>
+    
+    <h2>' . esc_html('Step 2: upload credentials.json file', 'cf7-google-sheets') . '</h2>
+            
+    <div class="card">
+      <div class="row">
+        <input type="file" id="upload-credentials" name="file" accept=".json">
+      </div>
+      <p class="submit sr-only"><input type="submit" name="upload" id="upload" class="button button-primary" onclick="loadCredentials()" value="Upload"></p>
+    
+      <form id="config-form" method="POST" action="' . esc_url(admin_url('admin-post.php')) . '">
+      <input type="hidden" name="action" value="cf7_sheets_update">
+      ' . wp_nonce_field('cf7_sheets_update', 'cf7_sheets', true, false) . '
+      <input type="hidden" name="redirectToUrl" value="' . esc_url(admin_url('admin.php?page=cf7-sheets-forms')) . '">
+      <input type="hidden" id="credentials" name="cf7-sheets-config[credentials]" value="">
+      </form>
+    
+      <script>
+        function loadCredentials()
+        {
+          let fileInput = document.getElementById("upload-credentials");
+          if (fileInput.files.length <= 0) {
+            return;
+          }
+        
+          let file = fileInput.files[0];
+          if (file.size > 10 * 1024) {
+            alert("File is too big");
+            return;
+          }
+        
+          const reader = new FileReader();
+          reader.addEventListener("load", (event) => {
+            try {
+              JSON.parse(event.target.result);
+            } catch (error) {
+              alert("Invalid JSON file");
+              return;
+            }
+       
+            let elem = document.getElementById("credentials");
+            elem.value = event.target.result;
+            let form = document.getElementById("config-form");
+            form.submit();
+          });
+          reader.readAsText(file);
+        }
+      </script>
+    
+      <br>
+      <table class="form-table" role="presentation">
+        <tr>
+          <th scope="row"><label for="client_id">Client ID</label></th>
+          <td>' . (isset($config['client_id']) ? esc_html($config['client_id']) : '') . '</td>
+        </tr>
+        <tr>
+          <th scope="row"><label for="client_email">Client email</label></th>
+          <td>' . (isset($config['client_email']) ? esc_html($config['client_email']) : '') . '</td>
+        </tr>
+      </table>
+    </div>
+    
+    <br>
+    <hr>
+    
+    <h2>' . esc_html('Step 3: (optional) test connection to Google Sheets', 'cf7-google-sheets') . '</h2>
+
+    <div class="card">
+      <ul style="list-style: circle">
+        <li>' . esc_html('Go to', 'cf7-google-sheets') . ' <a href="https://docs.google.com/spreadsheets">https://docs.google.com/spreadsheets</a></li>
+        <li>' . esc_html('Open an existing sheet or create a new one.', 'cf7-google-sheets') . '</li>
+        <li>' . wp_kses(__('Click <b>Share</b> and grant <b>Editor</b> permissions to <b>Client email</b> as shown above.', 'cf7-google-sheets'), array('b' => array())) . '</li>
+        <li>' . wp_kses(__('Determine <b>Sheet ID</b> from the Google Sheets URL, that looks as follows:', 'cf7-google-sheets'), array('b' => array())) . ' https://docs.google.com/spreadsheets/d/<b>&lt;sheet-id&gt;</b>/edit</;li>
+        <li>' . wp_kses(__('Enter <b>Sheet ID</b> and click <b>Test</b>.', 'cf7-google-sheets'), array('b' => array())) . '</li>
+      </ul>
+
+      <form method="POST" action="' . esc_url(admin_url('admin-post.php')) . '" onkeydown="return event.key != \'Enter\';">
+      <input type="hidden" name="action" value="cf7_sheets_action">
+      <input type="hidden" name="action_name" value="test_access">
+      ' . wp_nonce_field('cf7_sheets_action', 'cf7_sheets', false, true) . '
+      <input type="hidden" name="redirectToUrl" value="' . esc_url(admin_url('admin.php?page=cf7-sheets-forms')) . '"
+
+      <table class="form-table" role="presentation">
+        <tr>
+          <th scope="row"><label for="sheets_id">Sheet ID</label></th>
+          <td><input type="text" id="sheet-id" name="cf7-sheet-id" class="regular-text" value=""</td>
+        </tr>
+      </table>
+
+      <p class="submit sr-only"><input type="submit" name="submit" id="submit" class="button button-primary" value="' .  esc_attr__('Test', 'cf7-google-sheets') . '" /></p>
+      </form>
+    </div>
+  </div>';
+  
+    if (cf7_sheets_log_exists()) {
+        echo '<br>
+  <hr>
+  <br>
+  <a href="' . esc_attr(cf7_sheets_url('/log/log.txt')) . '"' . esc_html__('View log', 'cf7-google-sheets') . '</a>';
     }
 
-    function include_with_variables($filePath, $variables = array(), $print = true)
-    {
-        $output = NULL;
-        if (file_exists($filePath)) {
-            // Extract the variables to a local namespace
-            extract($variables);
-
-            // Start output buffering
-            ob_start();
-
-            // Include the template file
-            include $filePath;
-
-            // End buffering and return its contents
-            $output = ob_get_clean();
-        }
-        if ($print) {
-            print $output;
-        }
-        return $output;
+  echo '  </div>
+</div>';
     }
 
     public function admin_enqueue_scripts($hook_suffix)
@@ -143,10 +261,14 @@ class CF7_Sheets_Admin_Form
 
     public function submit_update()
     {
-        $nonce = sanitize_text_field($_POST[$this->get_nonce_key()]);
-        $action = sanitize_text_field($_POST['action']);
+        if (!isset($_POST[$this->get_nonce_key()]) || !isset($_POST['action'])) {
+            print 'Sorry, your request is missing mandatory parameters.';
+            exit;
+        }
 
-        if (!isset($nonce) || !wp_verify_nonce($nonce, $action)) {
+        $nonce = sanitize_text_field(wp_unslash($_POST[$this->get_nonce_key()]));
+        $action = sanitize_text_field($_POST['action']);
+        if (!wp_verify_nonce($nonce, $action)) {
             print 'Sorry, your nonce did not verify.';
             exit;
         }
@@ -165,7 +287,7 @@ class CF7_Sheets_Admin_Form
 
         foreach ($whitelisted_keys as $key) {
             if (array_key_exists($key, $_POST)) {
-                $fields_to_update[$key] = $_POST[$key];
+                $fields_to_update[$key] = sanitize_post_field($key, $_POST[$key], 0, 'db');
             }
         }
 
@@ -175,11 +297,10 @@ class CF7_Sheets_Admin_Form
 
         $this->db_update_options($fields_to_update);
 
-        $redirect_to = $_POST['redirectToUrl'];
-
-        if ($redirect_to) {
+       if (isset($_POST['redirectToUrl'])) {
+            $redirect_to = esc_url_raw($_POST['redirectToUrl']);
             add_settings_error('cf7_sheets_msg', 'cf7_sheets_msg_option', __("Changes saved."), 'success');
-            set_transient('settings_errors', get_settings_errors(), 30);
+            set_transient('cf7_sheets_errors', get_settings_errors(), 30);
             wp_safe_redirect($redirect_to);
             exit;
         }
@@ -202,11 +323,16 @@ class CF7_Sheets_Admin_Form
 
     public function submit_action()
     {
-        $nonce = sanitize_text_field($_POST[$this->get_nonce_key()]);
+        if (!isset($_POST[$this->get_nonce_key()]) || !isset($_POST['action']) || !isset($_POST['action_name'])) {
+            print 'Sorry, your request is missing mandatory parameters.';
+            exit;
+        }
+
+        $nonce = sanitize_text_field(wp_unslash($_POST[$this->get_nonce_key()]));
         $action = sanitize_text_field($_POST['action']);
         $action_name = sanitize_text_field($_POST['action_name']);
 
-        if (!isset($nonce) || !wp_verify_nonce($nonce, $action)) {
+        if (!wp_verify_nonce($nonce, $action)) {
            print 'Sorry, your nonce did not verify.';
            exit;
        }
@@ -217,8 +343,8 @@ class CF7_Sheets_Admin_Form
            $error = $this->$action_func_name();
        }
 
-       $redirect_to = $_POST['redirectToUrl'];
-       if ($redirect_to) {
+       if (isset($_POST['redirectToUrl'])) {
+            $redirect_to = esc_url_raw($_POST['redirectToUrl']);
             if (empty($error)) {
                 add_settings_error('cf7_sheets_msg', 'cf7_sheets_msg_option', __("Operation completed."), 'success');
             } elseif (substr_compare($error, 'ERROR', 0, 5) != 0) {
@@ -227,106 +353,31 @@ class CF7_Sheets_Admin_Form
                 add_settings_error('cf7_sheets_msg', 'cf7_sheets_msg_option', $error, 'danger');
             }
 
-            set_transient('settings_errors', get_settings_errors(), 30);
+            set_transient('cf7_sheets_errors', get_settings_errors(), 30);
             wp_safe_redirect($redirect_to);
             exit;
        }
     }
 
     /**
-     * Form elements outputs
-     */
-    private function render_input($group, $key, $required = false)
-    {
-        $inputValue = isset($this->default_values[$group][$key]) ? stripslashes($this->default_values[$group][$key]) : '';
-        $requiredAttr = ($required) ? "required" : '';
- 
-        return '<input type="text" id="' . $key . '" name="' . $group . '[' . $key . ']" class="regular-text" value="' . $inputValue . '" ' . $requiredAttr . '>';
-    }
- 
-    private function render_textarea($group, $key)
-    {
-        $defaultValue = isset($this->default_values[$group][$key]) ? stripslashes($this->default_values[$group][$key]) : '';
- 
-        return '<textarea class="form-control" rows="6" autocomplete="off" id="' . $key . '" name="' . $group . '[' . $key . ']">' . $defaultValue . '</textarea>';
-    }
- 
-    private function render_select($group, $key, $options)
-    {
-        $selectedVal = isset($this->default_values[$group][$key]) ? $this->default_values[$group][$key] : '';
- 
-        $html = '';
-        $html .= '<select class="form-control" id="' . $key . '" name="' . $group . '[' . $key . ']">';
-        $html .= ($selectedVal == '') ? '<option value=""></option>' : '';
-        foreach ($options as $key => $opt) {
-            $selectedOpt = '';
-            if ($selectedVal == $key) {
-                $selectedOpt = 'selected="selected"';
-            }
-            $html .= '<option value="' . $key . '" ' . $selectedOpt . '>' . $opt . '</option>';
-        }
-        $html .= '</select>';
-        return $html;
-    }
- 
-    private function render_checkbox($group, $key)
-    {
-        $checkedVal = isset($this->default_values[$group][$key]) ? $this->default_values[$group][$key] : '';
-
-        $checkedAttr = "";
-        if ($checkedVal != '') {
-            $checkedAttr = "checked";
-        }
-        $html = '';
-
-        $html .= '
-        <input type="hidden" name="' . $group . '[' . $key . ']" value="">
-        <input class="form-check-input" type="checkbox" value="on" id="' . $key . '" name="' . $group . '[' . $key . ']" ' . $checkedAttr . '>';
-
-        return $html;
-    }
-
-    /**
-     * Prepare data for views
-    */
- 
-    private function connect_data()
-    {
-        $client = new CF7_Sheets_Client();
-        $client_data = $client->client_data();
-        
-        $args = array(
-            'client_id' => $client_data['client_id'],
-            'client_email' => $client_data['client_email'],
-            'sheet_id' => $this->render_input('cf7-sheets-test', 'sheet_id')
-        );
-        return $args;
-    }
-
-    /**
      * Actions
      */
 
-    private function upload_credentials_action()
-    {
-        if ($_FILES['file']['size'] > 4096) {
-            return 'ERROR: file is too large';
-        }
-        
-        if($_FILES['file']['error'] != 0) {
-            return 'ERROR: failed to upload the file';
-        }
-
-        $base_path = WP_PLUGIN_DIR . '/' . CF7_SHEETS_DIR . '/';
-        @mkdir($base_path . 'data');
-        move_uploaded_file($_FILES['file']['tmp_name'], $base_path . 'data/credentials.json');
-        file_put_contents($base_path . 'data/.htaccess', 'deny from all');
-        return '';
-    }
-
     private function test_access_action()
     {
-        $sheet_id = $_POST['cf7-sheets-test']['sheet_id'];
+        if (!isset($_POST[$this->get_nonce_key()]) || !isset($_POST['action']) || !isset($_POST['cf7-sheet-id'])) {
+            print 'Sorry, your request is missing mandatory parameters.';
+            exit;
+        }
+
+        $nonce = sanitize_text_field(wp_unslash($_POST[$this->get_nonce_key()]));
+        $action = sanitize_text_field($_POST['action']);
+        if (!wp_verify_nonce($nonce, $action)) {
+            print 'Sorry, your nonce did not verify.';
+            exit;
+        }
+
+        $sheet_id = sanitize_text_field($_POST['cf7-sheet-id']);
         if (empty($sheet_id)) {
             return 'ERROR: Sheet ID is empty';
         }
@@ -334,33 +385,4 @@ class CF7_Sheets_Admin_Form
         $client = new CF7_Sheets_Client();
         return $client->test($sheet_id);
     }
-    
-
-    /**
-     * Helper functions 
-     */
-
-    private function current_view()
-    {
-        $current_step = isset($_GET['page']) ? $_GET['page'] : 'connect';
-    
-        if (strpos($current_step, '_') === false) {
-            return 'connect';
-        }
-    
-        return str_replace($this->get_id() . "_", "", $current_step);
-    }
-
-    private function template_server_path($file_path, $include = false)
-    {
-        $base_path = WP_PLUGIN_DIR . '/' . CF7_SHEETS_DIR . '/';
-    
-        $path_to_file = $base_path . $file_path . '.php';
-
-        if ($include) {
-            include $path_to_file;
-        }
-
-        return $path_to_file;
-    }
- } 
+} 

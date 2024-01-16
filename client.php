@@ -1,13 +1,25 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 /**
- * integration with Contact Forms 7
+ * Google Sheets client
  */
 
 include_once ( plugin_dir_path(__FILE__) . 'lib/vendor/autoload.php' );
 
 class CF7_Sheets_Client
 {
+    private $config;
+    public function __construct()
+    {
+        $config = get_option('cf7-sheets-config');
+        $credentials_text = isset($config['credentials']) ? stripslashes($config['credentials']) : '{}';
+        $credentials = json_decode($credentials_text, true);
+
+        $this->config = $credentials;
+    }
+
     public function get_service()
     {
         $client = new Google_Client();
@@ -15,7 +27,7 @@ class CF7_Sheets_Client
         $client->setScopes(Google_Service_Sheets::SPREADSHEETS);
         $client->setAccessType('offline');
         $base_path = WP_PLUGIN_DIR . '/' . CF7_SHEETS_DIR . '/';
-        $client->setAuthConfig($base_path  . 'data/credentials.json');
+        $client->setAuthConfig($this->config);
 
         $service = new Google_Service_Sheets($client);
         return $service;
@@ -27,17 +39,11 @@ class CF7_Sheets_Client
             'client_email' => '',
             'client_id' => ''
         );
-        $base_path = WP_PLUGIN_DIR . '/' . CF7_SHEETS_DIR . '/';
-        $credentials_file = $base_path . 'data/credentials.json';
-        if (file_exists($credentials_file)) {
-            $jsonString = file_get_contents($credentials_file);
-            $jsonData = json_decode($jsonString, true);
-            if (array_key_exists('client_email', $jsonData)) {
-                $data['client_email'] = $jsonData['client_email'];
-            }
-            if (array_key_exists('client_id', $jsonData)) {
-                $data['client_id'] = $jsonData['client_id'];
-            }
+        if (array_key_exists('client_email', $this->config)) {
+            $data['client_email'] = $this->config['client_email'];
+        }
+        if (array_key_exists('client_id', $this->config)) {
+            $data['client_id'] = $this->config['client_id'];
         }
         return $data;
     }

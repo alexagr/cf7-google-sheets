@@ -3,8 +3,8 @@
 * Donate link: https://paypal.me/alexagr
 * Tags: Contact Form 7, Google Sheets, Google, Sheets
 * Requires at least: 3.6
-* Tested up to: 6.3.1
-* Stable tag: 1.1
+* Tested up to: 6.4.2
+* Stable tag: 1.3
 * License: GPLv3 or later
 * License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -46,6 +46,10 @@ After successfully connecting the plugin to Google Sheets, do the following to c
 
 The plugin verifies spreadsheet header on each new form submission and adds new fields to it if needed. Note that it never deletes fields from the header - as this would also delete some submission data - though you can do it manually. You may also manually reorder columns as you wish.
 
+## _Capturing Submission Metadata_
+
+In addition to the *datetime* and regular form fields, you may also capture Contact Form 7 [special mail-tags][https://contactform7.com/special-mail-tags]. In order to do so, add *manually* corresponding headers to your spreadsheet. Remove square brackets and first underscore from the tag name, and replace remaining underscores with dashes. For example, add *remote-ip* header to capture *[_remote_ip]* mail-tag.
+
 ## _Integration with "Contact Form 7 Database Addon - CFDB7"_
 
 If you use [Contact Form 7 Database Addon - CFDB7](https://wordpress.org/plugins/contact-form-cfdb7/) to save your submissions, you will also be able to resend already submitted forms to Google Sheets. This may be useful if something went wrong during initial form submission and/or someone deleted data in Google Sheets by mistake. In order to do so, in CFDB7 plugin, choose your form, open specific submission and click *Send to Google Sheets* button.
@@ -56,10 +60,10 @@ Initial version of this plugin was inspired by [CF7 Google Sheets Connector](htt
 
 However it's implementation is quite different:
 * it uses service principle for authentication with Google Sheets
-* it implements automatic header generation
-* it has more straightforward (and hopefully more reliable) sheets update logic
-
-All this results in a more reliable integration.
+* it has completely different and much more reliable sheets update logic
+* it implements automatic header generation, to ensure that no submission data is lost
+* it supports capturing submission meta-data
+* it provides integration with CFDB7 plugin for forms re-submission
 
 ## Installation
 
@@ -77,6 +81,11 @@ All this results in a more reliable integration.
 
 ## Changelog
 
+* 1.3
+  * Refactor and clean-up the code for publishing to wordpress.org
+* 1.2
+  * Refactor credentials upload for compliance with "Plugin Check"
+    * After upgrade, please re-upload credentials.json in Settings screen
 * 1.1
   * Add integration with "Contact Form 7 Database Addon - CFDB7"
   * Fix uploaded file name
